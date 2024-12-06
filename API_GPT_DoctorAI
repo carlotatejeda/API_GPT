@@ -1,0 +1,276 @@
+openapi: 3.1.0
+info:
+  title: Patient Data API
+  description: API for managing patient information and interacting with GPT.
+  version: 1.0.0
+servers:
+  - url: https://yynqu41tb1.execute-api.us-east-1.amazonaws.com/
+    description: Production API Gateway endpoint
+paths:
+  /gpt-response:
+    post:
+      operationId: getGptResponse
+      summary: Get response from GPT model based on a prompt
+      description: Sends a prompt to OpenAI's GPT model and retrieves the response.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+                  description: The prompt to send to GPT
+              required:
+                - prompt
+      responses:
+        '200':
+          description: Successful response with GPT output
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: string
+                    description: The GPT model's generated response
+        '400':
+          description: Bad request, missing prompt
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message
+
+  /patients:
+    get:
+      operationId: getPatient
+      summary: Get a patient's information
+      description: Fetches details of a specific patient by name and surname.
+      parameters:
+        - name: name
+          in: query
+          description: Patient's first name
+          required: false
+          schema:
+            type: string
+        - name: surname
+          in: query
+          description: Patient's last name
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Patient found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        '404':
+          description: Patient not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+        '401':
+          description: Unauthorized, invalid API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message
+    post:
+      operationId: addPatient
+      summary: Add a new patient
+      description: Adds a new patient record to the database.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Patient'
+      responses:
+        '201':
+          description: Patient created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        '400':
+          description: Bad request, invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message
+
+  /patients/update:
+    post:
+      operationId: updatePatient
+      summary: Update an existing patient's information
+      description: Updates the information of an existing patient by ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  description: The ID of the patient to update
+                patient:
+                  $ref: '#/components/schemas/Patient'
+              required:
+                - id
+                - patient
+      responses:
+        '200':
+          description: Patient updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        '404':
+          description: Patient not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+
+  /visits:
+    post:
+      operationId: addVisit
+      summary: Add a visit record for a patient
+      description: Adds a new visit record for a patient.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Visit'
+      responses:
+        '201':
+          description: Visit created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Visit'
+        '400':
+          description: Bad request, invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message
+
+components:
+  schemas:
+    Patient:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The unique identifier of the patient
+        name:
+          type: string
+          description: The first name of the patient
+        surname:
+          type: string
+          description: The last name of the patient
+        email:
+          type: string
+          description: The email address of the patient
+        age:
+          type: integer
+          description: The age of the patient
+        weight:
+          type: number
+          format: float
+          description: The weight of the patient
+        height:
+          type: number
+          format: float
+          description: The height of the patient
+        sex:
+          type: string
+          description: The sex of the patient
+        ethnicity:
+          type: string
+          description: The ethnicity of the patient
+        zip_code:
+          type: string
+          description: The postal code of the patient's address
+        family_history:
+          type: string
+          description: Family history of the patient
+        allergies:
+          type: string
+          description: Allergies of the patient
+        recent_illnesses:
+          type: string
+          description: Recent illnesses of the patient
+        daily_habits:
+          type: string
+          description: Daily habits of the patient
+        medications:
+          type: string
+          description: Medications taken by the patient
+
+    Visit:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The unique identifier of the visit
+        patient_id:
+          type: integer
+          description: The ID of the associated patient
+        symptoms:
+          type: string
+          description: Symptoms reported during the visit
+        diagnosis:
+          type: string
+          description: Diagnosis given during the visit
+        recommendations:
+          type: string
+          description: Recommendations given during the visit
+        doctor_suggestion:
+          type: string
+          description: Suggestions made by the doctor
+        date:
+          type: string
+          format: date-time
+          description: The date and time of the visit
